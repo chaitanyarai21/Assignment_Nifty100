@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Indicator Table</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Indicator Table</h1>
+
+    <form id="indicatorForm">
+        <label for="stockName">Stock Name:</label>
+        <input type="text" id="stockName" name="stockName" required><br>
+
+        <label for="candleInterval">Candle Interval:</label>
+        <select id="candleInterval" name="candleInterval">
+            <option value="1 Minute">1 Minute</option>
+            <option value="1W">1 Week</option>
+            <option value="1M">1 Month</option>
+        </select><br>
+
+        <button type="submit">Generate Table</button>
+    </form>
+
+    <table id="indicatorTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Indicator Name</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Indicator rows will be added here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Function to update the indicator table
+        function updateIndicatorTable(stockName, candleInterval) {
+            $.ajax({
+                url: "/get_indicator_values",
+                data: {stockName: stockName, candleInterval: candleInterval},
+                success: function (data) {
+                    const indicatorTableBody = $("#indicatorTable tbody");
+                    indicatorTableBody.empty(); // Clear existing rows
+                    
+                    for (const indicator in data) {
+                        if (data.hasOwnProperty(indicator)) {
+                            const row = `<tr><td>${indicator}</td><td>${data[indicator]}</td></tr>`;
+                            indicatorTableBody.append(row);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Submit the form to update the table
+        $("#indicatorForm").submit(function (e) {
+            e.preventDefault();
+            const stockName = $("#stockName").val();
+            const candleInterval = $("#candleInterval").val();
+            updateIndicatorTable(stockName, candleInterval);
+        });
+
+        // Initial update with default values
+        const defaultStockName = ""; // Set a default stock name if needed
+        const defaultCandleInterval = $("#candleInterval").val();
+        updateIndicatorTable(defaultStockName, defaultCandleInterval);
+    </script>
+</body>
+</html>

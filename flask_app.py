@@ -21,6 +21,10 @@ def home():
     ingest_data()
     return render_template("home.html")
 
+@app.route('/indicators_table')
+def indicators_table():
+    return render_template('indicator_table.html')
+
 @app.route("/ingest_data")
 def ingest_data():
     spark = SparkSession.builder.appName("Nifty100_Data_Load").getOrCreate()
@@ -60,7 +64,7 @@ def ingest_data():
             .withColumn('volume', F.coalesce(F.last('volume', True).over(w1),F.first('volume',True).over(w2)))
 
             stock_data[file_name_ind] = df_cleaned  # Assign the DataFrame to a dictionary  with the file name
-            break
+            
     # spark.stop()
     return "data ingested"
 
@@ -107,11 +111,11 @@ def get_stock_data():
         print(df)
         
         chart_data = {
-        "Date": df["date"].tolist()[:100],
-        "Open": df["open"].tolist()[:100],
-        "Close": df["close"].tolist()[:100],
-        "High": df["high"].tolist()[:100],
-        "Low": df["low"].tolist()[:100],
+        "Date": df["date"].tolist(),
+        "Open": df["open"].tolist(),
+        "Close": df["close"].tolist(),
+        "High": df["high"].tolist(),
+        "Low": df["low"].tolist(),
         }
         
         return chart_data
@@ -176,13 +180,30 @@ def technical_indicator(ind,stock_name,candle_interval):
         print("invalid indicator")
         return {}
 
-    result = result.to_frame().reset_index()
+    if type(result) is tuple:
+        result = pd.Series(result[0]).to_frame().reset_index()
+    else:
+        result = result.to_frame().reset_index()
+    print(result)
     result.rename(columns = {0:'indicator_value'}, inplace = True)
     chart_data = {"Date":result["date_index"].tolist(),
                   "Indicator_value":result["indicator_value"].tolist()}
     return chart_data
 
-    
+@app.route('/get_indicator_values')
+def generate_indicator_values():
+    stock_name = request.args.get('stockName')
+    candle_interval = request.args.get('candleInterval')
+    indicator_dict = {}
+    indicators_list=["adx","aroon","atr","cci","ema","macd","mom","rsi","sma","uo","willr"]
+    for ind in indicators_list:
+        latest_value = latest_technical_indicator(ind, stock_name, candle_interval)
+        if latest_value!={}:
+            indicator_dict[ind] = latest_value["latest_value"]
+
+    return indicator_dict
+
+
 
 @app.route('/technical_indicator_chart', methods=['GET'])
 def technical_indicator_chart():
@@ -197,11 +218,7 @@ def technical_indicator_chart():
         return {}
 
 
-@app.route('/latest_technical_indicator', methods=['GET'])
-def latest_technical_indicator():
-    ind = request.form.get('indicator')
-    stock_name = request.form.get('stockName')
-    candle_interval = request.form.get('candleInterval')
+def latest_technical_indicator(ind, stock_name, candle_interval):
     if stock_name in stock_data:
         chart_data = technical_indicator(ind,stock_name,candle_interval)
         latest_value = chart_data["Indicator_value"][-1]
