@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Indicator Values</title>
+    <style>
+        /* Add CSS styles for better presentation */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .indicator-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Create separate containers for each indicator -->
+    <div class="indicator-container">
+        <h2>Indicator 1</h2>
+        <p>Value for Indicator 1: <span id="indicator1Value">Loading...</span></p>
+    </div>
+
+    <div class="indicator-container">
+        <h2>Indicator 2</h2>
+        <p>Value for Indicator 2: <span id="indicator2Value">Loading...</span></p>
+    </div>
+
+    <!-- Repeat similar containers for the remaining indicators -->
+    <!-- You can copy and paste the above div for each indicator, updating the titles and IDs -->
+
+    <!-- JavaScript to update indicator values using a function -->
+    <script>
+        // Function to fetch indicator values
+        function getIndicatorValue(indicatorName) {
+            // Replace this with your function to fetch the indicator value
+            // For demonstration purposes, we're using a random value here
+            return Math.random() * 100;
+        }
+
+        // Function to update indicator values
+        function updateIndicatorValues() {
+            const indicator1ValueElement = document.getElementById("indicator1Value");
+            if (indicator1ValueElement) {
+                indicator1ValueElement.textContent = getIndicatorValue("Indicator 1");
+            }
+
+            const indicator2ValueElement = document.getElementById("indicator2Value");
+            if (indicator2ValueElement) {
+                indicator2ValueElement.textContent = getIndicatorValue("Indicator 2");
+            }
+
+            // Repeat this pattern for each indicator
+        }
+
+        // Call the function to update values periodically (e.g., every second)
+        setInterval(updateIndicatorValues, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Candlestick Chart</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Candlestick Chart</h1>
+    
+    <form id="chartForm">
+        <label for="stockName">Stock Name:</label>
+        <input type="text" id="stockName" name="stockName" required><br>
+        
+        <label for="candleInterval">Candle Interval:</label>
+        <select id="candleInterval" name="candleInterval">
+            <option value="1 minute">1 Min</option>
+            <option value="5 minute">5 Min</option>
+            <option value="30 minute">30 Min</option>
+            <option value="1 hour">1 Hour</option>
+            <option value="4 hour">4 Hour</option>
+            <option value="1 day">1 Day</option>
+            <option value="1 week">1 Week</option>
+        </select><br>
+        
+        <button type="submit">Generate Chart</button>
+    </form>
+
+    <div id="candlestickChart"></div>
+
+    <script>
+        $(document).ready(function () {
+            $("#chartForm").submit(function (e) {
+                e.preventDefault();
+                
+                const stockName = $("#stockName").val();
+                const candleInterval = $("#candleInterval").val();
+                
+                $.ajax({
+                    url: "/get_stock_data",
+                    type: "POST",
+                    data: {stockName: stockName, candleInterval: candleInterval},
+                    success: function (data) {
+                        renderCandlestickChart(data);
+                    }
+                });
+            });
+
+            function renderCandlestickChart(data) {
+                const candlestickChartDiv = document.getElementById("candlestickChart");
+                
+                const trace = {
+                    x: data.Date,
+                    open: data.Open,
+                    close: data.Close,
+                    high: data.High,
+                    low: data.Low,
+                    type: 'candlestick',
+                    name: 'Candlestick Chart',
+                };
+                
+                const layout = {
+                    title: 'Candlestick Chart',
+                    xaxis: {
+                        title: 'Date',
+                    },
+                    yaxis: {
+                        title: 'Price',
+                    }
+                };
+                
+                Plotly.newPlot(candlestickChartDiv, [trace], layout);
+            }
+        });
+    </script>
+</body>
+</html>
